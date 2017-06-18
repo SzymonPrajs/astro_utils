@@ -1,6 +1,9 @@
 import numpy as np
 
 
+__all__ = ['rebin_spectrum']
+
+
 def rebin_spectrum(wavelength, flux, wavelength_bin):
     """
     Rebin spectrum to a new wavelength bin
