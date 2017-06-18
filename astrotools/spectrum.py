@@ -9,15 +9,18 @@ def rebin_spectrum(wavelength, flux, wavlength_bin):
     ----------
     wavelength : array-like
         wavelength array
+
     flux : array-like
         flux array
+
     wavlength_bin : float
         size of the new wavelength bin
 
     Returns
-    ----------
+    -------
     x_new : numpy.ndarray
         Array of new rebinned wavelengths
+
     y_new : numpy.ndarray
         Array of rebinned fluxes
     """
