@@ -3,8 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 
-
-__all__ = ['read_slap', 'read_array', 'slice_band', 'normalize_lc', 'read_osc']
+__all__ = ['read_slap', 'read_array', 'slice_band', 'slice_band_generator', 'normalize_lc', 'read_osc']
 
 
 def read_slap(file_name: str) -> pd.DataFrame:
@@ -92,6 +91,20 @@ def read_array(mjd=None, flux=None, flux_err=None, band=None) -> pd.DataFrame:
 
 
 def read_osc(json_file_path):
+    """
+    Read light curves from Open Supernova Catalogue (OSC)
+    JSON files and parse into the common DataFrame format.
+
+    Parameters
+    ----------
+    json_file_path : str
+        Path to the OSC JSON file
+
+    Returns
+    -------
+    data : `pandas.DataFrame`
+        DataFrame object in the common format
+    """
     data = None
 
     if not os.path.exists(json_file_path):
@@ -107,10 +120,46 @@ def read_osc(json_file_path):
         else:
             raise ValueError('No photometry found in the JSON file')
 
+    # TODO: Convert magnitudes and their error to flux and flux_err
     return data
 
 
 def slice_band(data, band=None):
+    """
+    Return a slice of the input DataFrame or a dictionary
+    of DataFrames indexed by the filter name.
+    
+    Parameters
+    ----------
+    data : `pandas.DataFrame`
+        DataFrame object in the common format containing:
+        MJD, flux, flux_err, band
+
+    band : str or array-like, optional
+        If a single band is provided a single DataFrame object
+        will be returned, with more than one filter resulting
+        in a dictionary of DataFrame objects.
+
+    Returns
+    -------
+    data_dict : `pandas.DataFrame` or dict
+    """
+    data_list = list(slice_band_generator(data, band=band))
+
+    if len(data_list) == 1:
+        return data_list[0]
+
+    else:
+        data_dict = {}
+
+        for data in data_list:
+            band_name = data['band'].values.unique()[0]
+            data_dict[band_name] = data
+
+        return data_dict
+
+
+def slice_band_generator(data, band=None):
     """
     Generator retuning a series of DataFrame objects,
     each containing the light curve for just one, unique band.
