@@ -30,6 +30,7 @@ def rebin_spectrum(wavelength, flux, wavelength_bin):
     try:
         hasattr(wavelength, '__iter__')
         hasattr(flux, '__iter__')
+
     except TypeError:
         print('`wavelength` and `flux` must be array-like')
 

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 
@@ -21,6 +22,9 @@ def read_slap_files(file_name: str) -> pd.DataFrame:
         DataFrame object containing a light curve in the data structure
         throughout this repository
     """
+    if not os.path.exists(file_name):
+        raise ValueError('Path does not exists: ' + file_name)
+
     data = pd.read_csv(file_name, header=None, delim_whitespace=True)
     data.columns = ['mjd', 'flux', 'flux_err', 'band']
 
