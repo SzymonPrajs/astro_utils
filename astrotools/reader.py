@@ -153,7 +153,7 @@ def slice_band(data, band=None):
         data_dict = {}
 
         for data in data_list:
-            band_name = data['band'].values.unique()[0]
+            band_name = data['band'].unique()[0]
             data_dict[band_name] = data
 
         return data_dict
