@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 
 
-__all__ = ['read_slap_files', 'read_array', 'split_by_band', 'normalize']
+__all__ = ['read_slap', 'read_array', 'slice_band', 'normalize_lc']
 
 
-def read_slap_files(file_name: str) -> pd.DataFrame:
+def read_slap(file_name: str) -> pd.DataFrame:
     """
     Read light curve data files as originally formatted for SLAP.
     This is a basic format of: mjd, flux, flux_err, band
@@ -90,7 +90,7 @@ def read_array(mjd=None, flux=None, flux_err=None, band=None) -> pd.DataFrame:
     return df
 
 
-def split_by_band(data):
+def slice_band(data):
     """
     Generator retuning a series of DataFrame objects,
     each containing the light curve for just one, unique band.
@@ -112,7 +112,7 @@ def split_by_band(data):
         yield data.query('band == "{}"'.format(band))
 
 
-def normalize(data):
+def normalize_lc(data):
     """
     Normalise light curve flux and flux_err
 

@@ -68,8 +68,6 @@ class GP:
         p0 = self.gp.kernel.vector
         scipy.optimize.minimize(self._log_likelihood, p0, jac=self._grad_log_likelihood)
 
-        print(np.exp(self.gp.kernel[:]))
-
     def predict(self, x_new: float):
         """
         Interpolate for new values of `x_new` using the previously
