@@ -1,9 +1,10 @@
 import os
+import json
 import numpy as np
 import pandas as pd
 
 
-__all__ = ['read_slap', 'read_array', 'slice_band', 'normalize_lc']
+__all__ = ['read_slap', 'read_array', 'slice_band', 'normalize_lc', 'read_osc']
 
 
 def read_slap(file_name: str) -> pd.DataFrame:
@@ -90,13 +91,36 @@ def read_array(mjd=None, flux=None, flux_err=None, band=None) -> pd.DataFrame:
     return df
 
 
-def slice_band(data):
+def read_osc(json_file_path):
+    data = None
+
+    if not os.path.exists(json_file_path):
+        raise ValueError('File does not exists: ' + json_file_path)
+
+    with open(json_file_path) as json_file:
+        json_data = json.load(json_file)
+        object_name = list(json_data.keys())[0]
+
+        if 'photometry' in json_data[object_name]:
+            data = pd.DataFrame(json_data[object_name]['photometry'])
+
+        else:
+            raise ValueError('No photometry found in the JSON file')
+
+    return data
+
+
+def slice_band(data, band=None):
     """
     Generator retuning a series of DataFrame objects,
     each containing the light curve for just one, unique band.
 
     Parameters
     ----------
+    band : str or array-like, optional
+        If band is specified a DataFrame a generator returning
+        objects of only that band are returned.
+
     data : `pandas.DataFrame`
         DataFrame object in the common format containing:
         MJD, flux, flux_err, band
@@ -106,10 +130,17 @@ def slice_band(data):
     data : `pandas.DataFrame`
         Object containing the light curve for one, unique band.
     """
-    unique_bands = data['band'].unique()
+    if band is None:
+        unique_bands = data['band'].unique()
 
-    for band in unique_bands:
-        yield data.query('band == "{}"'.format(band))
+    elif hasattr(band, '__iter__'):
+        unique_bands = band
+
+    else:
+        unique_bands = [band]
+
+    for band_iter in unique_bands:
+        yield data.query('band == "{}"'.format(band_iter))
 
 
 def normalize_lc(data):
