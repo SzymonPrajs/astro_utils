@@ -34,7 +34,14 @@ def is_ab_band(band):
 
 
 def list_available_filter():
-    # TODO: docstring
+    """
+    List all available filter responses
+
+    Returns
+    -------
+    filter_dict : dict
+        Dictionary of filter names containing lists of available instruments
+    """
     filter_list = glob(FILTER_DIR + '*_*.dat')
 
     filter_dict = {}
@@ -52,7 +59,14 @@ def list_available_filter():
 
 
 def list_available_instruments():
-    # TODO: docstring
+    """
+    List all available instruments
+
+    Returns
+    -------
+    filter_dict : dict
+        Dictionary of instrument names containing available filter responses
+    """
     filter_list = glob(FILTER_DIR + '*_*.dat')
 
     filter_dict = {}
@@ -70,7 +84,18 @@ def list_available_instruments():
 
 
 def load_filter(filter_path):
-    # TODO: docstring
+    """
+    Load a filter response into a pandas DataFrame object
+    Parameters
+    ----------
+    filter_path : str
+        Path to the filter response file
+
+    Returns
+    -------
+    filter_data : `pandas.DataFrame`
+        DataFrame object containing: wavelength and bandpass
+    """
     try:
         filter_data = pd.read_csv(filter_path, delim_whitespace=True, header=None)
 
@@ -83,12 +108,52 @@ def load_filter(filter_path):
 
 
 def get_filter_path(band, instrument):
-    # TODO: docstring
+    """
+    Get the path to a filter response file
+
+    Parameters
+    ----------
+    band : str
+        Name of a photometric band
+
+    instrument : str
+        Name of an instrument. This cannot be a synonym.
+
+    Returns
+    -------
+    filter_path : str
+        Path to the filter response file
+    """
     return FILTER_DIR + instrument + '_' + band + '.dat'
 
 
 def zero_point(band, system=None, instrument=None, round_output=True):
-    # TODO: docstring
+    """
+
+    Parameters
+    ----------
+    band : str
+        Name of a photometric filter
+
+    system : str, optional
+        Choose between AB and Vega photometric system. If not specified
+        AB will be used for the SDSS (lower case) bands and Vega for
+        everything else.
+
+    instrument : str, optional
+        Name of the instrument used (or filter system). Current choices are:
+        SDSS, DES, LSST, PS1, SNLS, PTF48, Bessell, 2MASS, Swift, HST, HAWK-I, LSQ.
+        If no instrument is specifies, SDSS filters are used for the AB system and
+        Bessell for Vega.
+
+    round_output : bool
+        If True, the output will be rounded to two decimal points.
+
+    Returns
+    -------
+    zp : float
+        Zero point for the specified band, instrument and photometric system
+    """
     band_list = list_available_filter()
 
     if band not in band_list:
@@ -139,9 +204,9 @@ def zero_point(band, system=None, instrument=None, round_output=True):
 
     flux_area = np.trapz(flux, filter_data['wavelength'])
     filter_area = np.trapz(filter_data['bandpass'], filter_data['wavelength'])
-    mag = -2.5 * np.log10(flux_area / filter_area)
+    zp = -2.5 * np.log10(flux_area / filter_area)
 
     if round_output:
-        mag = np.round(mag, 2)
+        zp = np.round(zp, 2)
 
-    return mag
+    return zp
