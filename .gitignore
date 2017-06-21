@@ -101,4 +101,4 @@ ENV/
 .mypy_cache/
 .idea/
 test.py
-data/filters/Vega.dat
+.DS_Store

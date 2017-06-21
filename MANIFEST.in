@@ -1,0 +1,4 @@
+global-exclude *.DS_Store
+
+recursive-include astrotools/data *.dat
+

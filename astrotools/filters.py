@@ -4,7 +4,8 @@ import pandas as pd
 from glob import glob
 import scipy.constants as const
 
-FILTER_DIR = "data/filters/"
+PACKAGE_PATH = os.path.dirname(__file__)
+FILTER_DIR = os.path.join(PACKAGE_PATH, 'data/filters/')
 
 __all__ = ['zero_point', 'list_available_filter', 'list_available_instruments', 'is_ab_band', 'get_filter_path']
 
@@ -208,5 +209,7 @@ def zero_point(band, system=None, instrument=None, round_output=True):
 
     if round_output:
         zp = np.round(zp, 2)
+
+    print(PACKAGE_PATH, FILTER_DIR)
 
     return zp
