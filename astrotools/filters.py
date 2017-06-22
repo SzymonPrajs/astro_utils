@@ -7,7 +7,12 @@ import scipy.constants as const
 PACKAGE_PATH = os.path.dirname(__file__)
 FILTER_DIR = os.path.join(PACKAGE_PATH, 'data/filters/')
 
-__all__ = ['zero_point', 'list_available_filter', 'list_available_instruments', 'is_ab_band', 'get_filter_path']
+__all__ = ['zero_point',
+           'list_available_filter',
+           'list_available_instruments',
+           'is_ab_band',
+           'get_filter_path',
+           'mask_present_filters']
 
 
 def is_ab_band(band):
@@ -128,6 +133,18 @@ def get_filter_path(band, instrument):
     return FILTER_DIR + instrument + '_' + band + '.dat'
 
 
+def mask_present_filters(filter_list):
+    if not hasattr(filter_list, '__iter__'):
+        raise ValueError('`Filter_list` must be array-like')
+
+    filter_series = pd.Series(filter_list)
+    available_filters = list_available_filter()
+
+    filter_mask = filter_series.map(lambda band: band in available_filters)
+
+    return filter_mask.values
+
+
 def zero_point(band, system=None, instrument=None, round_output=True):
     """
 
@@ -165,7 +182,11 @@ def zero_point(band, system=None, instrument=None, round_output=True):
             instrument = band_list[band][0]
 
         else:
-            instrument = 'Generic'
+            if is_ab_band(band):
+                instrument = 'SDSS'
+
+            else:
+                instrument = 'Bessell'
 
     if instrument not in band_list[band]:
         raise ValueError('This combination of instrument and band does not exists: ' + instrument + '_' + band)

@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from .filters import zero_point
+from .filters import zero_point, mask_present_filters
 
 __all__ = ['read_slap', 'read_array', 'slice_band', 'slice_band_generator', 'normalize_lc', 'read_osc']
 
@@ -123,9 +123,11 @@ def read_osc(json_file_path):
 
     # TODO: Replace row names with common synonyms
 
+    data = data[mask_present_filters(data['band'])]
+
     data['zp'] = data.apply(lambda x: zero_point(x['band']), axis=1)
-    data['flux'] = 10 ** (-0.4 * (data['magnitude'] + data['zp']))
-    data['flux_err'] = data['e_magnitude'] * 0.921034 * data['flux']
+    data['flux'] = 10 ** (-0.4 * (data['magnitude'].astype(float) + data['zp']))
+    data['flux_err'] = data['e_magnitude'].astype(float) * 0.921034 * data['flux']
 
     return data
 
