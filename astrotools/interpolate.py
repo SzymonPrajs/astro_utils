@@ -40,7 +40,7 @@ class GP:
         self.data = data
 
         self.gp = george.GP(Matern32Kernel(kernel_size))
-        self.gp.compute(self.data['mjd'], self.data['flux_err'])
+        self.gp.compute(self.data['mjd'], yerr=self.data['flux_err'])
 
     def fit_reduce(self, data, init_kernel_size=None):
         """
@@ -63,12 +63,12 @@ class GP:
         self.data = data
 
         self.gp = george.GP(Matern32Kernel(init_kernel_size))
-        self.gp.compute(data['mjd'], data['flux_err'])
+        self.gp.compute(self.data['mjd'], yerr=self.data['flux_err'])
 
         p0 = self.gp.kernel.vector
         scipy.optimize.minimize(self._log_likelihood, p0, jac=self._grad_log_likelihood)
 
-    def predict(self, x_new: float):
+    def predict(self, x_new):
         """
         Interpolate for new values of `x_new` using the previously
         fit Gaussian Process model.
@@ -85,7 +85,7 @@ class GP:
             Mean value of the model
 
         std : `np.ndarray`
-            1 sigma uncertainly values
+            One sigma uncertainly values
         """
         if self.data is None or self.gp is None:
             raise RuntimeError("""Values cannot be predicted before kernel is fit.
