@@ -2,9 +2,15 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from .filters import zero_point, mask_present_filters
+from .filters import zero_point, mask_present_filters, mask_present_instrument
 
-__all__ = ['read_slap', 'read_array', 'slice_band', 'slice_band_generator', 'normalize_lc', 'read_osc']
+__all__ = ['read_slap',
+           'read_array',
+           'slice_band',
+           'slice_band_generator',
+           'normalize_lc',
+           'read_osc',
+           'rename_data_columns']
 
 
 def read_slap(file_name: str) -> pd.DataFrame:
@@ -121,13 +127,16 @@ def read_osc(json_file_path):
         else:
             raise ValueError('No photometry found in the JSON file')
 
-    # TODO: Replace row names with common synonyms
+    data = rename_data_columns(data)
 
     data = data[mask_present_filters(data['band'])]
+    data = data[mask_present_instrument(data['telescope'])]
+
+    data['mjd'] = data['mjd'].astype(float)
 
     data['zp'] = data.apply(lambda x: zero_point(x['band']), axis=1)
-    data['flux'] = 10 ** (-0.4 * (data['magnitude'].astype(float) + data['zp']))
-    data['flux_err'] = data['e_magnitude'].astype(float) * 0.921034 * data['flux']
+    data['flux'] = 10 ** (-0.4 * (data['mag'].astype(float) + data['zp']))
+    data['flux_err'] = data['mag_err'].astype(float) * 0.921034 * data['flux']
 
     return data
 
@@ -214,5 +223,34 @@ def normalize_lc(data):
     data['flux'] /= norm_factor
     data['flux_err'] /= norm_factor
     data['norm_factor'] = norm_factor
+
+    return data
+
+
+def rename_data_columns(data):
+    # TODO: docstring
+    for col_name in data.columns:
+        col_name_lower = col_name.lower()
+        new_col_name = col_name_lower
+
+        if col_name_lower in ['time', 'jd', 't']:
+            new_col_name = 'mjd'
+
+        elif col_name_lower in ['fluxerr', 'err', 'error', 'flux_error']:
+            new_col_name = 'flux_err'
+
+        elif col_name_lower in ['filter', 'flt']:
+            new_col_name = 'band'
+
+        elif col_name_lower in ['magnitude']:
+            new_col_name = 'mag'
+
+        elif col_name_lower in ['magerr', 'e_magnitude', 'magnitude_error', 'mag_error']:
+            new_col_name = 'mag_err'
+
+        elif col_name_lower in ['zeropoint', 'zero_point']:
+            new_col_name = 'zp'
+
+        data.rename(index=str, columns={col_name: new_col_name}, inplace=True)
 
     return data

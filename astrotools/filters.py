@@ -12,7 +12,8 @@ __all__ = ['zero_point',
            'list_available_instruments',
            'is_ab_band',
            'get_filter_path',
-           'mask_present_filters']
+           'mask_present_filters',
+           'mask_present_instrument']
 
 
 def is_ab_band(band):
@@ -134,8 +135,9 @@ def get_filter_path(band, instrument):
 
 
 def mask_present_filters(filter_list):
+    # TODO: docstring
     if not hasattr(filter_list, '__iter__'):
-        raise ValueError('`Filter_list` must be array-like')
+        raise ValueError('`filter_list` must be array-like')
 
     filter_series = pd.Series(filter_list)
     available_filters = list_available_filter()
@@ -143,6 +145,19 @@ def mask_present_filters(filter_list):
     filter_mask = filter_series.map(lambda band: band in available_filters)
 
     return filter_mask.values
+
+
+def mask_present_instrument(instrument_list):
+    # TODO: docstring
+    if not hasattr(instrument_list, '__iter__'):
+        raise ValueError('`instrument_list` must be array-like')
+
+    instrument_series = pd.Series(instrument_list)
+    available_instruments = list_available_instruments()
+
+    instrument_mask = instrument_series.map(lambda band: band in available_instruments)
+
+    return instrument_mask.values
 
 
 def zero_point(band, system=None, instrument=None, round_output=True):
