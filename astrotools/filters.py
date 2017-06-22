@@ -210,6 +210,4 @@ def zero_point(band, system=None, instrument=None, round_output=True):
     if round_output:
         zp = np.round(zp, 2)
 
-    print(PACKAGE_PATH, FILTER_DIR)
-
     return zp

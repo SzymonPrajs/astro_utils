@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+from .filters import zero_point
 
 __all__ = ['read_slap', 'read_array', 'slice_band', 'slice_band_generator', 'normalize_lc', 'read_osc']
 
@@ -120,7 +121,12 @@ def read_osc(json_file_path):
         else:
             raise ValueError('No photometry found in the JSON file')
 
-    # TODO: Convert magnitudes and their error to flux and flux_err
+    # TODO: Replace row names with common synonyms
+
+    data['zp'] = data.apply(lambda x: zero_point(x['band']), axis=1)
+    data['flux'] = 10 ** (-0.4 * (data['magnitude'] + data['zp']))
+    data['flux_err'] = data['e_magnitude'] * 0.921034 * data['flux']
+
     return data
 
 
