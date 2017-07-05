@@ -32,7 +32,7 @@ def read_slap(file_name: str) -> pd.DataFrame:
     if not os.path.exists(file_name):
         raise ValueError('Path does not exists: ' + file_name)
 
-    data = pd.read_csv(file_name, header=None, delim_whitespace=True)
+    data = pd.read_csv(file_name, header=None, delim_whitespace=True, comment='#')
     data.columns = ['mjd', 'flux', 'flux_err', 'band']
 
     return data
