@@ -162,6 +162,7 @@ def mask_present_instrument(instrument_list):
 
 def zero_point(band, system=None, instrument=None, round_output=True):
     """
+    Calculate the zero point for a given filter
 
     Parameters
     ----------
@@ -247,3 +248,85 @@ def zero_point(band, system=None, instrument=None, round_output=True):
         zp = np.round(zp, 2)
 
     return zp
+
+
+class _Filter:
+    """
+    Filter response data structure (for internal use only)
+
+    Stores individual filter responses and their statistics. The objects are
+    loaded and accessed by the user though the main Filters class.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+"""
+    def __init__(self):
+        self.band =
+        self.instrument =
+
+        self.wavelength =
+        self.bandpass =
+        self.area = np.trapz(self.bandpass, x=self.wavelength)
+        self.ab_zero_point =
+        self.central_wavelength =
+
+class Filters:
+    """
+    Filter responses utility
+
+    Generic functionality for loading, providing statistics and using
+    astronomical filter responses. This can be used completely independently of
+    of other classes that are part of this package and should work with both
+    numpy array and pandas DataFrames
+
+    Parameters
+    ----------
+    load_all : bool, optional
+        Filter response files are not loaded by default to minimise the load
+        time for the module in case a large number of filter responses are
+        provided. This can be changed by setting this flag to True.
+    """
+    def __init__(self, load_all=False):
+        self.band_list = list_available_filter()
+        self.instrument_list = list_available_instruments()
+
+        self.filters = {}
+        self._loaded_filters = []
+
+        if load_all is True:
+            self.load_filters(load_all=True)
+
+    def __getitem__(self, filter_name):
+        """
+        `Official` access point for individual filter
+
+        For ease and readability the __getitem__ method was overwritten to
+        returns an object of the class _Filter after checking if a given
+        filter has been loaded. This is safer than the accessing the
+        Filters.filters dictionary directly however it is marginally slower.
+
+        Parameters
+        ----------
+        filter_name : str
+            Name of the filter to be accessed
+
+        Returns
+        -------
+        filter : _Filter
+            Object of the class _Filter containing filter responses and stats
+
+        Example
+        -------
+        >>> f = Filters('path/to/filters', load_all=True)
+        >>> f.filters['DES_g'].name
+        'DES_g'
+        >>> f['DES_g'].name
+        'DES_g'
+        """
+        return self.filters[filter_name]
+
