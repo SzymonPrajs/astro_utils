@@ -111,14 +111,12 @@ class Spectrum:
         Cosmology object used to compute luminosity distances. If no value is
         provided Planck15 cosmology will be assumed by default.
     """
-    def __init__(self, file_name=None, wavelength=None, flux=None,
-                 redshift=0, cosmology=None):
+    def __init__(self, file_name=None, wavelength=None, flux=None, redshift=0, cosmology=None):
         if file_name is not None:
             self.load_from_file(file_name)
 
         elif (wavelength is None) and (flux is None):
-            raise IOError("""Either file_name or wavelength and
-                          flux must be provided""")
+            raise IOError("""Either file_name or wavelength and flux must be provided""")
 
         if wavelength is not None:
             try:
@@ -165,8 +163,7 @@ class Spectrum:
             self.__cosmology = cosmology
 
         else:
-            raise TypeError("""cosmology must be of type
-                            astropy.cosmology.core.FlatLambdaCDM""")
+            raise TypeError("""cosmology must be of type astropy.cosmology.core.FlatLambdaCDM""")
 
         if float(redshift) < 0:
             raise ValueError('Redshift must be positive!')
@@ -247,13 +244,13 @@ class Spectrum:
         self._flux *= distance_factor.value
         self._lum_distance = new_lum_distance
 
-    def synthesis_photometry(self, filter_names, filters):
+    def synthesis_photometry(self, filter_name, filters):
         """
-        Make synthetic photometry from a spectum
+        Make synthetic photometry from a spectrum
 
         Parameters
         ----------
-        filter_names : str or array-like
+        filter_name : str or array-like
             Value or an array of names of filters at which the synthetic
             photometry is to be calculated.
 
@@ -266,16 +263,16 @@ class Spectrum:
         synthetic_flux : ndarray
             Array of synthetic fluxes matching the input filter_name
         """
-        filter_names = np.array(filter_names)
-        synthetic_flux = np.zeros(filter_names.size)
+        if not hasattr(filter_name, '__iter__'):
+            filter_name = [filter_name]
 
-        for i, flt in enumerate(filter_names):
-            bandpass = np.interp(self._wavelength,
-                                 filters[flt].wavelength,
-                                 filters[flt].bandpass, left=0, right=0)
+        filter_name = np.array(filter_name)
+        synthetic_flux = np.zeros(filter_name.size)
+
+        for i, flt in enumerate(filter_name):
+            bandpass = np.interp(self._wavelength, filters[flt].wavelength, filters[flt].bandpass, left=0, right=0)
             flux = self._flux * bandpass
-            synthetic_flux[i] = (np.trapz(flux, x=self._wavelength) /
-                                 filters[flt].area)
+            synthetic_flux[i] = (np.trapz(flux, x=self._wavelength) / filters[flt].area)
 
         return synthetic_flux
 
@@ -295,20 +292,21 @@ class Spectrum:
 
         Returns
         -------
-        synthetic_mag: ndarray
+        synthetic_mag: np.ndarray
             Array of synthetic magnitudes matching the input filter_name
         """
+        if not hasattr(filter_name, '__iter__'):
+            filter_name = [filter_name]
+
         synthetic_flux = self.synthesis_photometry(filter_name, filters)
         synthetic_mag = np.zeros_like(synthetic_flux)
 
         for i, flt in enumerate(filter_name):
-            synthetic_mag[i] = (-2.5*np.log10(synthetic_flux[i]) -
-                                filters[flt].ab_zero_point)
+            synthetic_mag[i] = (-2.5*np.log10(synthetic_flux[i]) - filters[flt].ab_zero_point)
 
         return synthetic_mag
 
-    def compute_colour_correction(self, observed_filter, referenceframe_filter,
-                                  filters, redshift=0):
+    def compute_colour_correction(self, observed_filter, referenceframe_filter, filters, redshift=0):
         """
         Compute K-correction from a spectrum
 

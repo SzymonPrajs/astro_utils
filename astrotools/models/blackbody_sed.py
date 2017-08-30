@@ -39,7 +39,7 @@ class BlackbodySED(Spectrum):
                 temperature = float(temperature) * u.K
 
             except:
-                raise ValueError('Temperature must be a numeric or u.Quantity')
+                raise ValueError('Temperature must be numeric or u.Quantity')
 
         if type(radius) != u.quantity.Quantity:
             try:
@@ -63,11 +63,11 @@ class BlackbodySED(Spectrum):
         self._input_z = redshift
         self._input_wav = wavelength / (1 + self._input_z)
 
-        sed = self.compute_blackbody()
+        sed = self.compute_absolute_blackbody()
         super().__init__(wavelength=self._input_wav, flux=sed, redshift=0)
         self.adjust_redshift(self._input_z)
 
-    def compute_blackbody(self):
+    def compute_absolute_blackbody(self):
         """
         Compute the Planck function for an astronomical object at rest-frame
 
@@ -82,10 +82,8 @@ class BlackbodySED(Spectrum):
             Return an array of fluxes for corresponding input wavelength values
             in the units of `erg/s/c^2/A` using the astropy.units library
         """
-        sed = np.zeros(self._input_wav.size)
         sed = 2.0 * const.h * np.pi * const.c**2 / self._input_wav**5
-        sed /= np.exp(const.h * const.c / (self._input_wav * const.k_B *
-                                           self._temperature)) - 1.0
+        sed /= np.exp(const.h * const.c / (self._input_wav * const.k_B * self._temperature)) - 1.0
         sed *= self._radius**2
         sed /= ((10 * u.pc).to(u.cm))**2
 

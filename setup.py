@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='astrotools',
     version='0.1',
-    packages=['astrotools'],
+    packages=['astrotools', 'astrotools.models'],
     url='github.com/szymonprajs/astrotools',
     license='MIT',
     author='Szymon Prajs',
