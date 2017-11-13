@@ -280,7 +280,7 @@ class _Filter:
         self.central_wavelength = np.trapz(self.bandpass * self.wavelength,  x=self.wavelength) / self.area
 
 
-class Filters():
+class Filters:
     """
     Filter responses utility
 
@@ -329,8 +329,21 @@ class Filters():
         return self.filters[filter_name]
 
     def load_filters(self, filter_name=None, load_all=False):
-        # TODO: Docstring
         """
+        Load either one specified filter or all filter in the FILTER_DIR
+        filter_name must be specified when load_all is set to False (default)
+
+        Parameters
+        ----------
+        filter_name : str, optional
+            Name of the filter to be accessed
+
+        load_all : bool, optional
+            Flag indicating whether all filters should be loaded
+
+        Returns
+        -------
+        object
         """
         if load_all is True:
             filters_to_load = np.array(self.__filter_names)
