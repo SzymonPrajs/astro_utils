@@ -211,6 +211,24 @@ class Spectrum:
         self._wavelength = arr[0]
         self._flux = arr[1]
 
+    def update_flux(self, flux):
+        # TODO: docstring
+        if flux is not None:
+            try:
+                iter(flux)
+                flux = np.array(flux)
+
+            except TypeError:
+                print('flux must be 1d array-like')
+
+            try:
+                flux = flux.astype(float)
+
+            except ValueError:
+                print('flux array must numeric')
+
+            self._flux = flux
+
     def adjust_redshift(self, new_redshift):
         """
         Move the spectrum to a new input redshift

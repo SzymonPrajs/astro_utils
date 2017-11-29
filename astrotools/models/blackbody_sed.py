@@ -33,8 +33,8 @@ class BlackbodySED(Spectrum):
         given as an array of floats or `astropy.units.quantity.Quantity`. If no
         input is provided, the default will be set to a range of 3000A - 10000A
     """
-    def __init__(self, temperature, radius, redshift=0, wavelength=None):
-        if temperature != u.quantity.Quantity:
+    def __init__(self, temperature=10000, radius=1e15, redshift=0, wavelength=None):
+        if type(temperature) != u.quantity.Quantity:
             try:
                 temperature = float(temperature) * u.K
 
@@ -66,6 +66,33 @@ class BlackbodySED(Spectrum):
         sed = self.compute_absolute_blackbody()
         super().__init__(wavelength=self._input_wav, flux=sed, redshift=0)
         self.adjust_redshift(self._input_z)
+
+    def update_blackbody(self, temperature=None, radius=None):
+        # TODO: docstring
+        if temperature is not None:
+            if type(temperature) != u.quantity.Quantity:
+                try:
+                    temperature = float(temperature) * u.K
+
+                except:
+                    raise ValueError('Temperature must be numeric or u.Quantity')
+
+            self._temperature = temperature
+
+        if radius is not None:
+            if type(radius) != u.quantity.Quantity:
+                try:
+                    radius = float(radius) * u.cm
+
+                except:
+                    raise ValueError('Radius must be a float or astropy.units')
+
+            self._radius = radius
+
+        temp_z = self._z
+        super(BlackbodySED, self).adjust_redshift(0)
+        super(BlackbodySED, self).update_flux(self.compute_absolute_blackbody())
+        super(BlackbodySED, self).adjust_redshift(temp_z)
 
     def compute_absolute_blackbody(self):
         """
