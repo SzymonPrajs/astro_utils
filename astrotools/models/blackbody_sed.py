@@ -33,7 +33,7 @@ class BlackbodySED(Spectrum):
         given as an array of floats or `astropy.units.quantity.Quantity`. If no
         input is provided, the default will be set to a range of 3000A - 10000A
     """
-    def __init__(self, temperature=10000, radius=1e15, redshift=0, wavelength=None):
+    def __init__(self, temperature=10000, radius=1e15, redshift=0, wavelength=None, template=None):
         if type(temperature) != u.quantity.Quantity:
             try:
                 temperature = float(temperature) * u.K
@@ -58,14 +58,25 @@ class BlackbodySED(Spectrum):
             except:
                 raise ValueError('Wavelength must be a numeric array')
 
+        if template is None:
+            transmitance = np.ones(wavelength.size)
+            template_wavelength = wavelength.value
+
+        else:
+            template_wavelength, transmitance = np.loadtxt(template, unpack=True)
+
+        np.interp(wavelength, transmitance, template_wavelength)
+
         self._temperature = temperature
         self._radius = radius
         self._input_z = redshift
         self._input_wav = wavelength / (1 + self._input_z)
+        self._corr = np.interp(self._input_wav, template_wavelength, transmitance, left=0.5, right=1.0)
 
         sed = self.compute_absolute_blackbody()
         super().__init__(wavelength=self._input_wav, flux=sed, redshift=0)
         self.adjust_redshift(self._input_z)
+
 
     def update_blackbody(self, temperature=None, radius=None):
         # TODO: docstring
@@ -113,5 +124,6 @@ class BlackbodySED(Spectrum):
         sed /= np.exp(const.h * const.c / (self._input_wav * const.k_B * self._temperature)) - 1.0
         sed *= self._radius**2
         sed /= ((10 * u.pc).to(u.cm))**2
+        sed *= self._corr
 
         return sed.to(u.erg / u.s / u.cm**2 / u.Angstrom)
